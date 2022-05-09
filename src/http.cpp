@@ -25,6 +25,7 @@ void report_http_error(klib::HttpStatus status, const std::string &url) {
 
 std::string http_get(const std::string &url, const std::string &proxy) {
   request.set_browser_user_agent();
+  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
@@ -51,6 +52,7 @@ std::string http_post(
     const phmap::flat_hash_map<std::string, std::string> &headers,
     const std::string &proxy) {
   request.set_browser_user_agent();
+  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
@@ -89,6 +91,7 @@ std::string http_get(const std::string &url, const std::string &proxy) {
 
 std::string http_get_rss(const std::string &url, const std::string &proxy) {
   request.set_browser_user_agent();
+  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
