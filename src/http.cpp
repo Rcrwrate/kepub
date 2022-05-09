@@ -204,9 +204,9 @@ const std::string user_name = "apiuser";
 const std::string password = "3s#1-yt6e*Acv@qer";
 const std::string device_token = "1F6EF324-A916-4995-971D-3AA71813072B";
 const std::string user_agent =
-    "boluobao/4.8.42(iOS;15.4.1)/appStore/" + device_token;
+    "boluobao/4.8.52(iOS;15.4.1)/appStore/" + device_token;
 const std::string user_agent_rss =
-    "SFReader/4.8.42 (iPhone; iOS 15.4.1; Scale/3.00)";
+    "SFReader/4.8.52 (iPhone; iOS 15.4.1; Scale/3.00)";
 
 std::string sf_security() {
   std::string uuid = klib::uuid();
