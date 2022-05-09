@@ -9,7 +9,7 @@
 
 #include <klib/exception.h>
 #include <klib/log.h>
-#include <klib/url_parse.h>
+#include <klib/url.h>
 #include <klib/util.h>
 #include <oneapi/tbb.h>
 #include <CLI/CLI.hpp>
@@ -96,6 +96,16 @@ void login(const std::string &login_name, const std::string &password,
   }
 
   klib::info("Login successful, nick name: {}", *nick_name);
+}
+
+std::string remove_image_url_quality(const std::string &image_url) {
+  klib::URL url(image_url);
+
+  auto query = url.query();
+  query.erase("quality");
+  url.set_query(query);
+
+  return url.build();
 }
 
 std::tuple<std::string, kepub::BookInfo, std::vector<kepub::Volume>> get_info(
@@ -186,8 +196,8 @@ std::tuple<std::string, kepub::BookInfo, std::vector<kepub::Volume>> get_info(
                 "z-i']/div[@class='with-border']/div/span/a/img")
              .node();
   CHECK_NODE(node);
-  book_info.cover_path_ =
-      std::string("https://masiro.me") + node.attribute("src").as_string();
+  book_info.cover_path_ = remove_image_url_quality(
+      std::string("https://masiro.me") + node.attribute("src").as_string());
 
   klib::info("Book name: {}", book_info.name_);
   klib::info("Author: {}", book_info.author_);
@@ -212,7 +222,7 @@ std::tuple<std::string, kepub::BookInfo, std::vector<kepub::Volume>> get_info(
 }
 
 std::string get_chapter_id(const std::string &chapter_url) {
-  auto map = klib::URL(chapter_url).query_map();
+  auto map = klib::URL(chapter_url).query();
   return map.at("cid");
 }
 
@@ -247,7 +257,8 @@ std::vector<std::string> get_content(const std::string &url, bool translation,
     for (const auto &line : klib::split_str(text, "\n")) {
       if (line.starts_with(image_prefix)) {
         try {
-          const auto image_url = line.substr(image_prefix_size);
+          const auto image_url =
+              remove_image_url_quality(line.substr(image_prefix_size));
           const auto image = http_get(image_url, proxy);
           const auto image_extension = kepub::image_to_extension(image);
           if (!image_extension) {
@@ -255,9 +266,7 @@ std::vector<std::string> get_content(const std::string &url, bool translation,
             continue;
           }
 
-          const auto image_stem =
-              kepub::stem(std::string(klib::URL(image_url).path()));
-
+          const auto image_stem = kepub::url_to_stem_name(image_url);
           auto new_image_name = image_stem + *image_extension;
           kepub::push_back(result, image_prefix + new_image_name);
 

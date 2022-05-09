@@ -123,8 +123,7 @@ std::vector<std::string> get_content(std::uint64_t chapter_id) {
       }
 
       try {
-        const auto image_stem =
-            kepub::stem(kepub::url_to_file_name(*image_url));
+        const auto image_stem = kepub::url_to_stem_name(*image_url);
         const auto image = http_get_rss(*image_url);
         const auto image_extension = kepub::image_to_extension(image);
         if (!image_extension) {

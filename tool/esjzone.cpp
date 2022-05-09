@@ -7,7 +7,6 @@
 
 #include <klib/exception.h>
 #include <klib/log.h>
-#include <klib/url_parse.h>
 #include <klib/util.h>
 #include <oneapi/tbb.h>
 #include <CLI/CLI.hpp>
@@ -163,9 +162,7 @@ std::vector<std::string> get_content(const std::string &url, bool translation,
             continue;
           }
 
-          const auto image_stem =
-              kepub::stem(std::string(klib::URL(image_url).path()));
-
+          const auto image_stem = kepub::url_to_stem_name(image_url);
           auto new_image_name = image_stem + *image_extension;
           kepub::push_back(result, image_prefix + new_image_name);
 

@@ -46,7 +46,7 @@ std::string KEPUB_EXPORT get_password();
 
 std::string KEPUB_EXPORT num_to_str(std::int32_t i);
 
-std::string KEPUB_EXPORT url_to_file_name(const std::string &str);
+std::string KEPUB_EXPORT url_to_stem_name(const std::string &str);
 
 std::optional<std::string> KEPUB_EXPORT
 check_is_supported_format(const std::string &file_name);
