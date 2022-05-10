@@ -146,8 +146,7 @@ void str_check(const std::string &str) {
 
       set.insert(c);
 
-      klib::warn("Unknown character: {:x} in {}", static_cast<std::int32_t>(c),
-                 str);
+      klib::warn("Unknown character: {} in {}", klib::utf32_to_utf8(c), str);
     }
   }
 }
@@ -165,7 +164,7 @@ std::int32_t str_size(const std::string &str) {
 }
 
 void volume_name_check(const std::string &volume_name) {
-  static re2::RE2 regex = R"(第([一二三四五六七八九十]|[0-9]){1,3}卷 .+)";
+  const static re2::RE2 regex = R"(第([一二三四五六七八九十]|[0-9]){1,3}卷 .+)";
 
   if (!re2::RE2::FullMatch(volume_name, regex)) {
     klib::warn("Irregular volume name format: {}", volume_name);
@@ -176,7 +175,7 @@ void volume_name_check(const std::string &volume_name) {
 }
 
 void title_check(const std::string &title) {
-  static re2::RE2 regex =
+  const static re2::RE2 regex =
       R"(第([零一二三四五六七八九十百千]|[0-9]){1,7}[章话] .+)";
 
   if (!re2::RE2::FullMatch(title, regex)) {
