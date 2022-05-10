@@ -8,6 +8,7 @@
 #include <klib/hash.h>
 #include <klib/http.h>
 #include <klib/log.h>
+#include <klib/url.h>
 #include <klib/util.h>
 #include <boost/algorithm/string.hpp>
 
@@ -25,7 +26,6 @@ void report_http_error(klib::HttpStatus status, const std::string &url) {
 
 std::string http_get(const std::string &url, const std::string &proxy) {
   request.set_browser_user_agent();
-  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
@@ -52,7 +52,6 @@ std::string http_post(
     const phmap::flat_hash_map<std::string, std::string> &headers,
     const std::string &proxy) {
   request.set_browser_user_agent();
-  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
@@ -91,7 +90,6 @@ std::string http_get(const std::string &url, const std::string &proxy) {
 
 std::string http_get_rss(const std::string &url, const std::string &proxy) {
   request.set_browser_user_agent();
-  request.set_accept_encoding("gzip, deflate, br");
   if (!std::empty(proxy)) {
     request.set_proxy(proxy);
   } else {
@@ -102,8 +100,7 @@ std::string http_get_rss(const std::string &url, const std::string &proxy) {
   request.verbose(true);
 #endif
 
-  auto response =
-      request.get(url, {}, {{"referer", "https://www.lightnovel.us/"}});
+  auto response = request.get(url, {{"referer", "https://www.lightnovel.us/"}});
 
   auto status = response.status();
   if (status != klib::HttpStatus::HTTP_STATUS_OK) {
@@ -148,22 +145,20 @@ const std::string app_version = "2.9.273";
 const std::string device_token = "ciweimao_client";
 const std::string user_agent = "Android com.kuangxiangciweimao.novel";
 const static std::string user_agent_rss =
-    request.url_encode("刺猬猫阅读") + "/2.9.273";
+    klib::url_encode("刺猬猫阅读") + "/2.9.273";
 
 }  // namespace
 
 std::string http_get_rss(const std::string &url) {
   request.set_no_proxy();
   request.set_user_agent(user_agent_rss);
-  request.set_accept_encoding("gzip, deflate, br");
 #ifndef NDEBUG
   request.verbose(true);
 #endif
 
-  auto response = request.get(url, {},
-                              {{"Accept", "image/webp,image/*;q=0.8"},
-                               {"Accept-Language", "zh-CN,zh-Hans;q=0.9"},
-                               {"Connection", "keep-alive"}});
+  auto response = request.get(url, {{"Accept", "image/webp,image/*;q=0.8"},
+                                    {"Accept-Language", "zh-CN,zh-Hans;q=0.9"},
+                                    {"Connection", "keep-alive"}});
 
   auto status = response.status();
   if (status != klib::HttpStatus::HTTP_STATUS_OK) {
@@ -177,7 +172,6 @@ std::string http_post(const std::string &url,
                       phmap::flat_hash_map<std::string, std::string> data) {
   request.set_no_proxy();
   request.set_user_agent(user_agent);
-  request.set_accept_encoding("gzip, deflate, br");
 #ifndef NDEBUG
   request.verbose(true);
 #endif
@@ -224,46 +218,39 @@ std::string sf_security() {
 
 }  // namespace
 
-std::string http_get(
-    const std::string &url,
-    const phmap::flat_hash_map<std::string, std::string> &params) {
+std::string http_get(const std::string &url) {
   request.set_no_proxy();
   request.set_user_agent(user_agent);
-  request.set_accept_encoding("gzip, deflate, br");
   request.basic_auth(user_name, password);
 #ifndef NDEBUG
   request.verbose(true);
 #endif
 
   return request
-      .get(url, params,
-           {{"Connection", "keep-alive"},
-            {"Accept", "application/vnd.sfacg.api+json;version=1"},
-            {"SFSecurity", sf_security()},
-            {"Accept-Language", "zh-Hans-CN;q=1"}})
+      .get(url, {{"Connection", "keep-alive"},
+                 {"Accept", "application/vnd.sfacg.api+json;version=1"},
+                 {"SFSecurity", sf_security()},
+                 {"Accept-Language", "zh-Hans-CN;q=1"}})
       .text();
 }
 
 std::string http_get_rss(const std::string &url) {
   request.set_no_proxy();
   request.set_user_agent(user_agent_rss);
-  request.set_accept_encoding("gzip, deflate, br");
 #ifndef NDEBUG
   request.verbose(true);
 #endif
 
   return request
-      .get(url, {},
-           {{"Accept", "image/*,*/*;q=0.8"},
-            {"Accept-Language", "zh-CN,zh-Hans;q=0.9"},
-            {"Connection", "keep-alive"}})
+      .get(url, {{"Accept", "image/*,*/*;q=0.8"},
+                 {"Accept-Language", "zh-CN,zh-Hans;q=0.9"},
+                 {"Connection", "keep-alive"}})
       .text();
 }
 
 std::string http_post(const std::string &url, const std::string &json) {
   request.set_no_proxy();
   request.set_user_agent(user_agent);
-  request.set_accept_encoding("gzip, deflate, br");
   request.basic_auth(user_name, password);
 #ifndef NDEBUG
   request.verbose(true);

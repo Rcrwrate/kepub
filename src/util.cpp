@@ -146,8 +146,8 @@ void str_check(const std::string &str) {
 
       set.insert(c);
 
-      klib::warn("Unknown character: {} in {}",
-                 klib::utf32_to_utf8(std::u32string(&c, 1)), str);
+      klib::warn("Unknown character: {:x} in {}", static_cast<std::int32_t>(c),
+                 str);
     }
   }
 }

@@ -53,10 +53,10 @@ endif()
 # Compiler
 # ---------------------------------------------------------------------------------------
 if(CMAKE_COMPILER_IS_GNUCXX)
-  if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 11.2.0)
+  if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 12.0.0)
     message(
       FATAL_ERROR
-        "GCC version must be at least 11.2.0, the current version is: ${CMAKE_CXX_COMPILER_VERSION}"
+        "GCC version must be at least 12.0.0, the current version is: ${CMAKE_CXX_COMPILER_VERSION}"
     )
   endif()
   message(

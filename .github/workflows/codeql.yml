@@ -23,7 +23,7 @@ jobs:
 
       # https://github.com/github/codeql-action
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         with:
           languages: cpp
 
@@ -33,5 +33,6 @@ jobs:
       - name: Build
         run: cmake --build build --config Release -j"$(nproc)"
 
+      # https://github.com/github/codeql-action
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2

@@ -105,7 +105,7 @@ std::string remove_image_url_quality(const std::string &image_url) {
   query.erase("quality");
   url.set_query(query);
 
-  return url.build();
+  return url.to_string();
 }
 
 std::tuple<std::string, kepub::BookInfo, std::vector<kepub::Volume>> get_info(

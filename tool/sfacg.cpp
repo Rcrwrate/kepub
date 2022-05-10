@@ -11,6 +11,7 @@
 #include <klib/exception.h>
 #include <klib/log.h>
 #include <klib/unicode.h>
+#include <klib/url.h>
 #include <klib/util.h>
 #include <oneapi/tbb.h>
 #include <CLI/CLI.hpp>
@@ -53,8 +54,10 @@ void login(const std::string &login_name, const std::string &password) {
 }
 
 kepub::BookInfo get_book_info(const std::string &book_id) {
-  auto response = http_get("https://api.sfacg.com/novels/" + book_id,
-                           {{"expand", "intro"}});
+  klib::URL url("https://api.sfacg.com/novels/" + book_id);
+  url.set_query({{"expand", "intro"}});
+
+  auto response = http_get(url.to_string());
   auto info = json_to_book_info(std::move(response));
 
   klib::info("Book name: {}", info.name_);
@@ -107,9 +110,10 @@ std::optional<std::string> parse_image_url(const std::string &line) {
 
 std::vector<std::string> get_content(std::uint64_t chapter_id) {
   const auto id = std::to_string(chapter_id);
-  auto response = http_get("https://api.sfacg.com/Chaps/" + id,
-                           {{"chapsId", id}, {"expand", "content"}});
+  klib::URL url("https://api.sfacg.com/Chaps/" + id);
+  url.set_query({{"chapsId", id}, {"expand", "content"}});
 
+  auto response = http_get(url.to_string());
   const auto content_str = json_to_chapter_text(std::move(response));
 
   std::vector<std::string> content;
