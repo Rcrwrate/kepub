@@ -77,7 +77,11 @@ if(((${CMAKE_BUILD_TYPE} STREQUAL "Release") OR (${CMAKE_BUILD_TYPE} STREQUAL
 
   if(LTO_SUPPORTED)
     message(STATUS "Link time optimization: enabled")
+
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    if(CMAKE_COMPILER_IS_GNUCXX)
+      add_cxx_compiler_flag("-flto=auto")
+    endif()
   else()
     message(FATAL_ERROR "Link time optimization not supported: ${ERROR}")
   endif()
