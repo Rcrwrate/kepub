@@ -283,6 +283,7 @@ std::u32string custom_trans(const std::u32string &str, bool translation) {
           {U'頂', U'顶'},
           {U'倆', U'俩'},
           {U'祕', U'秘'},
+          {U'馀', U'余'},
           // https://zh.wikipedia.org/wiki/%E5%85%A8%E5%BD%A2%E5%92%8C%E5%8D%8A%E5%BD%A2
           {U'＂', U'"'},
           {U'＃', U'#'},
