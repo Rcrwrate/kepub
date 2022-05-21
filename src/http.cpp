@@ -136,16 +136,16 @@ namespace {
 // const std::string app_version = "2.9.803";
 // const std::string device_token =
 // "iPhone-ADDACF06-A9DD-482B-ADF5-ADE5B97438EE"; const std::string user_agent =
-//     "HappyBook/2.9.8 (iPhone; iOS 15.4.1; Scale/3.00)";
+//     "HappyBook/2.9.8 (iPhone; iOS 15.5; Scale/3.00)";
 // const static std::string user_agent_rss =
 //     request.url_encode("刺猬猫阅读") +
-//     "/2.9.803 CFNetwork/1331.0.7 Darwin/21.4.0";
+//     "/2.9.803 CFNetwork/1333.0.4 Darwin/21.5.0";
 
-const std::string app_version = "2.9.273";
+const std::string app_version = "2.9.282";
 const std::string device_token = "ciweimao_client";
 const std::string user_agent = "Android com.kuangxiangciweimao.novel";
 const static std::string user_agent_rss =
-    klib::url_encode("刺猬猫阅读") + "/2.9.273";
+    klib::url_encode("刺猬猫阅读") + "/2.9.282";
 
 }  // namespace
 
@@ -201,9 +201,9 @@ const std::string user_name = "apiuser";
 const std::string password = "3s#1-yt6e*Acv@qer";
 const std::string device_token = "1F6EF324-A916-4995-971D-3AA71813072B";
 const std::string user_agent =
-    "boluobao/4.8.52(iOS;15.4.1)/appStore/" + device_token;
+    "boluobao/4.8.54(iOS;15.5)/appStore/" + device_token;
 const std::string user_agent_rss =
-    "SFReader/4.8.52 (iPhone; iOS 15.4.1; Scale/3.00)";
+    "SFReader/4.8.54 (iPhone; iOS 15.5; Scale/3.00)";
 
 std::string sf_security() {
   std::string uuid = klib::uuid();
