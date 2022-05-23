@@ -28,6 +28,10 @@ Crawl novels from sfacg, ciweimao, esjzone, lightnovel and masiro; generate, app
 - OpenCC ([Apache License 2.0](https://github.com/BYVoid/OpenCC/blob/master/LICENSE))
 - indicators ([MIT License](https://github.com/p-ranav/indicators/blob/master/LICENSE))
 
+## Font
+
+- Source Han Sans ([SIL Open Font License](https://github.com/adobe-fonts/source-han-sans/blob/master/LICENSE.txt))
+
 ## Build environment
 
 - [kenv](https://github.com/KaiserLancelot/kenv)
