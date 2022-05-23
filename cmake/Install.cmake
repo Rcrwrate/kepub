@@ -89,11 +89,9 @@ set(CPACK_PACKAGE_VERSION
 set(CPACK_GENERATOR "TXZ;DEB")
 # https://cmake.org/cmake/help/latest/cpack_gen/deb.html
 set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-
 # https://cmake.org/cmake/help/latest/module/CPack.html#variable:CPACK_THREADS
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.20.0)
-  set(CPACK_THREADS 0)
-endif()
+set(CPACK_THREADS 0)
+# https://cmake.org/cmake/help/latest/cpack_gen/deb.html#variable:CPACK_DEBIAN_PACKAGE_SHLIBDEPS
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)
