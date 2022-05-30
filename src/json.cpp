@@ -125,7 +125,7 @@ kepub::BookInfo json_to_book_info(std::string json) {
   return result;
 }
 
-std::vector<kepub::Volume> KEPUB_EXPORT json_to_volumes(std::string json) {
+std::vector<kepub::Volume> json_to_volumes(std::string json) {
   std::vector<kepub::Volume> result;
 
   JSON_BASE_CIWEIMAO(json)
