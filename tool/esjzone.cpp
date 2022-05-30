@@ -213,7 +213,11 @@ int main(int argc, const char *argv[]) try {
   if (!std::empty(proxy)) {
     klib::info("Use proxy: {}", proxy);
   }
+
   klib::info("Maximum concurrency: {}", max_concurrency);
+  if (max_concurrency > 4) {
+    klib::warn("This maximum concurrency can be dangerous, please be careful");
+  }
 
   klib::warn(
       "Volume division is not supported at the moment, please handle it "
