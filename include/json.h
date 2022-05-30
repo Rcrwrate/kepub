@@ -24,7 +24,7 @@ struct KEPUB_EXPORT Token {
   std::string login_token_;
 };
 
-Token KEPUB_EXPORT get_token(std::string json);
+Token KEPUB_EXPORT json_to_token(std::string json);
 
 struct KEPUB_EXPORT UserInfo {
   std::string nick_name_;
@@ -42,11 +42,9 @@ LoginInfo KEPUB_EXPORT json_to_login_info(std::string json);
 
 kepub::BookInfo KEPUB_EXPORT json_to_book_info(std::string json);
 
-std::vector<kepub::Volume> KEPUB_EXPORT get_volume_info(std::string json);
+std::vector<kepub::Volume> KEPUB_EXPORT json_to_volumes(std::string json);
 
-std::vector<kepub::Chapter> KEPUB_EXPORT get_chapter_info(std::string json);
-
-std::string KEPUB_EXPORT get_chapter_command(std::string json);
+std::string KEPUB_EXPORT json_to_chapter_command(std::string json);
 
 std::string KEPUB_EXPORT json_to_chapter_text(std::string json);
 

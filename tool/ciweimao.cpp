@@ -59,7 +59,7 @@ std::optional<Token> try_read_token() {
 
   Token token;
   try {
-    token = get_token(decrypt(json));
+    token = json_to_token(decrypt(json));
   } catch (...) {
     klib::warn("Failed to read local user information, please enter again");
     return {};
@@ -115,38 +115,27 @@ kepub::BookInfo get_book_info(const Token &token, const std::string &book_id) {
   return info;
 }
 
-std::vector<kepub::Volume> get_book_volume(const Token &token,
-                                           const std::string &book_id) {
+std::vector<kepub::Volume> get_volume_chapter(const Token &token,
+                                              const std::string &book_id) {
   klib::info("Start getting chapter information");
 
-  auto response = http_post("https://app.hbooker.com/book/get_division_list",
-                            {{"account", token.account_},
-                             {"login_token", token.login_token_},
-                             {"book_id", book_id}});
-
-  return get_volume_info(decrypt_no_iv(response));
-}
-
-std::vector<kepub::Chapter> get_chapters(const Token &token,
-                                         std::uint64_t volume_id) {
   auto response = http_post(
-      "https://app.hbooker.com/chapter/get_updated_chapter_by_division_id",
+      "https://app.hbooker.com/chapter/get_updated_chapter_by_division_new",
       {{"account", token.account_},
        {"login_token", token.login_token_},
-       {"division_id", std::to_string(volume_id)}});
+       {"book_id", book_id}});
 
-  return get_chapter_info(decrypt_no_iv(response));
+  return json_to_volumes(decrypt_no_iv(response));
 }
 
 std::string get_chapter_command(const Token &token,
                                 const std::string &chapter_id) {
-  // FIXME
   auto response = http_post("https://app.hbooker.com/chapter/get_chapter_cmd",
                             {{"account", token.account_},
                              {"login_token", token.login_token_},
                              {"chapter_id", chapter_id}});
 
-  return ::get_chapter_command(decrypt_no_iv(response));
+  return json_to_chapter_command(decrypt_no_iv(response));
 }
 
 std::optional<std::string> parse_image_url(const std::string &line) {
@@ -249,26 +238,18 @@ int main(int argc, const char *argv[]) try {
   }
 
   auto book_info = get_book_info(token, book_id);
-  auto volumes = get_book_volume(token, book_id);
-
-  oneapi::tbb::task_arena limited(max_concurrency);
-  oneapi::tbb::task_group task_group;
+  auto volumes = get_volume_chapter(token, book_id);
 
   std::size_t chapter_count = 0;
-
-  limited.execute([&] {
-    task_group.run([&] {
-      oneapi::tbb::parallel_for_each(volumes, [&](kepub::Volume &volume) {
-        auto chapters = get_chapters(token, volume.volume_id_);
-        chapter_count += std::size(chapters);
-        volume.chapters_ = std::move(chapters);
-      });
-    });
-  });
-  limited.execute([&] { task_group.wait(); });
+  for (const auto &volume : volumes) {
+    chapter_count += std::size(volume.chapters_);
+  }
 
   klib::info("Start downloading novel content");
   kepub::ProgressBar bar(chapter_count, book_info.name_);
+
+  oneapi::tbb::task_arena limited(max_concurrency);
+  oneapi::tbb::task_group task_group;
 
   for (auto &volume : volumes) {
     limited.execute([&] {

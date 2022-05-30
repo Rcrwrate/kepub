@@ -132,20 +132,13 @@ namespace ciweimao {
 
 namespace {
 
-// FIXME
-// const std::string app_version = "2.9.803";
-// const std::string device_token =
-// "iPhone-ADDACF06-A9DD-482B-ADF5-ADE5B97438EE"; const std::string user_agent =
-//     "HappyBook/2.9.8 (iPhone; iOS 15.5; Scale/3.00)";
-// const static std::string user_agent_rss =
-//     request.url_encode("刺猬猫阅读") +
-//     "/2.9.803 CFNetwork/1333.0.4 Darwin/21.5.0";
-
 const std::string app_version = "2.9.282";
-const std::string device_token = "ciweimao_client";
-const std::string user_agent = "Android com.kuangxiangciweimao.novel";
+const std::string device_token = "ciweimao_";
+const std::string user_agent =
+    "Android  com.kuangxiangciweimao.novel  2.9.282,OnePlus, ONEPLUS A3010, "
+    "25, 7.1.1";
 const static std::string user_agent_rss =
-    klib::url_encode("刺猬猫阅读") + "/2.9.282";
+    "Dalvik/2.1.0 (Linux; U; Android 7.1.1; ONEPLUS A3010 Build/NMF26F)";
 
 }  // namespace
 
@@ -156,9 +149,7 @@ std::string http_get_rss(const std::string &url) {
   request.verbose(true);
 #endif
 
-  auto response = request.get(url, {{"Accept", "image/webp,image/*;q=0.8"},
-                                    {"Accept-Language", "zh-CN,zh-Hans;q=0.9"},
-                                    {"Connection", "keep-alive"}});
+  auto response = request.get(url, {{"Connection", "keep-alive"}});
 
   auto status = response.status();
   if (status != klib::HttpStatus::HTTP_STATUS_OK) {
@@ -179,9 +170,7 @@ std::string http_post(const std::string &url,
   data.emplace("app_version", app_version);
   data.emplace("device_token", device_token);
 
-  auto response = request.post(
-      url, data,
-      {{"Connection", "keep-alive"}, {"Accept-Language", "zh-Hans-CN;q=1"}});
+  auto response = request.post(url, data, {{"Connection", "keep-alive"}});
 
   auto status = response.status();
   if (status != klib::HttpStatus::HTTP_STATUS_OK) {

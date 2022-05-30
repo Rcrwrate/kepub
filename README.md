@@ -48,12 +48,6 @@ sfacg book-id
 gen-epub book-name.txt
 ```
 
-## Roadmap
-
-- Rewritten in Rust:
-  - Cross-platform
-  - Redesign and provide a better user experience
-
 ---
 
 Thanks to [JetBrains](https://www.jetbrains.com/) for donating product licenses to help develop this project <a href="https://www.jetbrains.com/"><img src="logo/jetbrains.svg" width="94" align="center" /></a>

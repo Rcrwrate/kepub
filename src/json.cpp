@@ -15,7 +15,7 @@ namespace kepub {
 
 namespace masiro {
 
-enum Code { Ok = 1, Error = -1 };
+enum Code { Error = -1 };
 
 void json_base(std::string json) {
   simdjson::ondemand::parser parser;
@@ -34,15 +34,13 @@ namespace ciweimao {
 
 enum Code { Ok = 100000, LoginExpired = 200100 };
 
-// FIXME
-// auto code = doc["code"].get_int64().value();
 #define JSON_BASE_CIWEIMAO(json)                                        \
   simdjson::ondemand::parser parser;                                    \
   (json).reserve(std::size(json) + simdjson::SIMDJSON_PADDING);         \
   auto doc = parser.iterate(json);                                      \
   auto code = std::stoi(std::string(doc["code"].get_string().value())); \
   if (code == LoginExpired) {                                           \
-    klib::warn(doc["tip"].get_string().value());                        \
+    klib::warn("Login expired, please log in again");                   \
   } else if (code != Ok) {                                              \
     klib::error(doc["tip"].get_string().value());                       \
   }
@@ -56,7 +54,7 @@ std::string serialize(const std::string &account,
   return boost::json::serialize(obj);
 }
 
-Token get_token(std::string json) {
+Token json_to_token(std::string json) {
   simdjson::ondemand::parser parser;
   json.reserve(std::size(json) + simdjson::SIMDJSON_PADDING);
   auto doc = parser.iterate(json);
@@ -127,60 +125,50 @@ kepub::BookInfo json_to_book_info(std::string json) {
   return result;
 }
 
-std::vector<kepub::Volume> get_volume_info(std::string json) {
+std::vector<kepub::Volume> KEPUB_EXPORT json_to_volumes(std::string json) {
   std::vector<kepub::Volume> result;
 
   JSON_BASE_CIWEIMAO(json)
-  for (auto volume : doc["data"]["division_list"].get_array()) {
+  for (auto volume : doc["data"]["chapter_list"].get_array()) {
     std::string volume_id(volume["division_id"].get_string().value());
     std::string volume_name(volume["division_name"].get_string().value());
     klib::trim(volume_name);
 
-    std::uint64_t id;
-    auto ptr = std::data(volume_id);
-    std::from_chars(ptr, ptr + std::size(volume_id), id);
+    std::vector<kepub::Chapter> chapters;
+    for (auto chapter : volume["chapter_list"].get_array()) {
+      std::string chapter_id(chapter["chapter_id"].get_string().value());
+      std::string chapter_title(chapter["chapter_title"].get_string().value());
+      klib::trim(chapter_title);
 
-    result.emplace_back(id, volume_name);
-  }
+      std::string is_valid(chapter["is_valid"].get_string().value());
+      if (is_valid != "1") {
+        klib::warn("The chapter is not valid, title: {}", chapter_title);
+        continue;
+      }
 
-  return result;
-}
+      std::string auth_access(chapter["auth_access"].get_string().value());
+      if (auth_access != "1") {
+        klib::warn("No authorized access, title: {}", chapter_title);
+        continue;
+      }
 
-std::vector<kepub::Chapter> get_chapter_info(std::string json) {
-  std::vector<kepub::Chapter> result;
-
-  JSON_BASE_CIWEIMAO(json)
-  for (auto chapter : doc["data"]["chapter_list"].get_array()) {
-    std::string chapter_id(chapter["chapter_id"].get_string().value());
-    std::string chapter_title(chapter["chapter_title"].get_string().value());
-    klib::trim(chapter_title);
-
-    // FIXME
-    // auto is_valid = chapter["is_valid"].get_int64().value();
-    std::string is_valid(chapter["is_valid"].get_string().value());
-    if (is_valid != "1") {
-      klib::warn("The chapter is not valid, title: {}", chapter_title);
-      continue;
-    }
-
-    // FIXME
-    // auto auth_access = chapter["auth_access"].get_int64().value();
-    std::string auth_access(chapter["auth_access"].get_string().value());
-    if (auth_access != "1") {
-      klib::warn("No authorized access, title: {}", chapter_title);
-    } else {
-      std::uint64_t id;
+      std::uint64_t id = 0;
       auto ptr = std::data(chapter_id);
       std::from_chars(ptr, ptr + std::size(chapter_id), id);
 
-      result.emplace_back(id, chapter_title);
+      chapters.emplace_back(id, chapter_title);
     }
+    std::uint64_t id = 0;
+    auto ptr = std::data(volume_id);
+    std::from_chars(ptr, ptr + std::size(volume_id), id);
+
+    result.emplace_back(id, volume_name, chapters);
   }
 
   return result;
 }
 
-std::string get_chapter_command(std::string json) {
+std::string json_to_chapter_command(std::string json) {
   JSON_BASE_CIWEIMAO(json)
   std::string result(doc["data"]["command"].get_string().value());
 
@@ -211,7 +199,7 @@ namespace sfacg {
   auto error_code =                                                       \
       static_cast<std::int32_t>(status["errorCode"].get_int64().value()); \
   if (http_code == 401 && error_code == 502) {                            \
-    klib::warn(status["msg"].get_string().value());                       \
+    klib::warn("Login expired, please log in again");                     \
   } else if (!(http_code == 200 && error_code == 200)) {                  \
     klib::error(status["msg"].get_string().value());                      \
   }
@@ -281,8 +269,8 @@ kepub::BookInfo json_to_book_info(std::string json) {
 
 std::vector<kepub::Volume> json_to_volumes(std::string json) {
   std::vector<kepub::Volume> result;
-  JSON_BASE_SFACG(json)
 
+  JSON_BASE_SFACG(json)
   for (auto volume : doc["data"]["volumeList"].get_array()) {
     std::uint64_t volume_id = volume["volumeId"].get_int64();
     std::string volume_name(volume["title"].get_string().value());
@@ -297,9 +285,10 @@ std::vector<kepub::Volume> json_to_volumes(std::string json) {
       auto need_fire_money = chapter["needFireMoney"].get_int64().value();
       if (need_fire_money > 0) {
         klib::warn("No authorized access, title: {}", chapter_title);
-      } else {
-        chapters.emplace_back(chapter_id, chapter_title);
+        continue;
       }
+
+      chapters.emplace_back(chapter_id, chapter_title);
     }
     result.emplace_back(volume_id, volume_name, chapters);
   }
