@@ -17,7 +17,12 @@ std::string KEPUB_EXPORT http_get(const std::string &url,
 
 namespace lightnovel {
 
+std::string KEPUB_EXPORT http_post(const std::string &url,
+                                   const std::string &json,
+                                   const std::string &proxy);
+
 std::string KEPUB_EXPORT http_get(const std::string &url,
+                                  const std::string &security_key,
                                   const std::string &proxy);
 
 std::string KEPUB_EXPORT http_get_rss(const std::string &url,

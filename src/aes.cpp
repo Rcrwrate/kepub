@@ -5,7 +5,7 @@
 #include <klib/hash.h>
 #include <klib/log.h>
 
-namespace kepub::ciweimao {
+namespace kepub {
 
 namespace {
 
@@ -40,4 +40,4 @@ std::string decrypt_no_iv(const std::string &str, const std::string &key) {
   }
 }
 
-}  // namespace kepub::ciweimao
+}  // namespace kepub

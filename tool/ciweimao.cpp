@@ -39,7 +39,7 @@ bool show_user_info(const Token &token) {
   auto response = http_post(
       "https://app.hbooker.com/reader/get_my_info",
       {{"account", token.account_}, {"login_token", token.login_token_}});
-  const auto info = json_to_user_info(decrypt_no_iv(response));
+  const auto info = json_to_user_info(kepub::decrypt_no_iv(response));
 
   if (info.login_expired_) {
     return false;
@@ -59,7 +59,7 @@ std::optional<Token> try_read_token() {
 
   Token token;
   try {
-    token = json_to_token(decrypt(json));
+    token = json_to_token(kepub::decrypt(json));
   } catch (...) {
     klib::warn("Failed to read local user information, please enter again");
     return {};
@@ -73,14 +73,15 @@ std::optional<Token> try_read_token() {
 }
 
 void write_token(const Token &token) {
-  klib::write_file(token_path, true,
-                   encrypt(serialize(token.account_, token.login_token_)));
+  klib::write_file(
+      token_path, true,
+      kepub::encrypt(serialize(token.account_, token.login_token_)));
 }
 
 LoginInfo login(const std::string &login_name, const std::string &password) {
   auto response = http_post("https://app.hbooker.com/signup/login",
                             {{"login_name", login_name}, {"passwd", password}});
-  auto info = json_to_login_info(decrypt_no_iv(response));
+  auto info = json_to_login_info(kepub::decrypt_no_iv(response));
 
   klib::info("Login successful, nick name: {}", info.user_info_.nick_name_);
   return info;
@@ -91,7 +92,7 @@ kepub::BookInfo get_book_info(const Token &token, const std::string &book_id) {
                             {{"account", token.account_},
                              {"login_token", token.login_token_},
                              {"book_id", book_id}});
-  auto info = json_to_book_info(decrypt_no_iv(response));
+  auto info = json_to_book_info(kepub::decrypt_no_iv(response));
 
   klib::info("Book name: {}", info.name_);
   klib::info("Author: {}", info.author_);
@@ -125,7 +126,7 @@ std::vector<kepub::Volume> get_volume_chapter(const Token &token,
        {"login_token", token.login_token_},
        {"book_id", book_id}});
 
-  return json_to_volumes(decrypt_no_iv(response));
+  return json_to_volumes(kepub::decrypt_no_iv(response));
 }
 
 std::string get_chapter_command(const Token &token,
@@ -135,7 +136,7 @@ std::string get_chapter_command(const Token &token,
                              {"login_token", token.login_token_},
                              {"chapter_id", chapter_id}});
 
-  return json_to_chapter_command(decrypt_no_iv(response));
+  return json_to_chapter_command(kepub::decrypt_no_iv(response));
 }
 
 std::optional<std::string> parse_image_url(const std::string &line) {
@@ -161,8 +162,9 @@ std::vector<std::string> get_content(const Token &token,
                              {"chapter_id", id},
                              {"chapter_command", chapter_command}});
   const auto encrypt_content_str =
-      json_to_chapter_text(decrypt_no_iv(response));
-  const auto content_str = decrypt_no_iv(encrypt_content_str, chapter_command);
+      json_to_chapter_text(kepub::decrypt_no_iv(response));
+  const auto content_str =
+      kepub::decrypt_no_iv(encrypt_content_str, chapter_command);
 
   std::vector<std::string> content;
   for (auto &line : klib::split_str(content_str, "\n")) {

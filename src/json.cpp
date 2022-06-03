@@ -30,6 +30,98 @@ void json_base(std::string json) {
 
 }  // namespace masiro
 
+namespace lightnovel {
+
+enum Code {
+  Ok = 0,
+  PasswordError = 2,
+  // FIXME
+  LoginExpired = 200100
+};
+
+#define JSON_BASE_LIGHTNOVEL(json)                              \
+  simdjson::ondemand::parser parser;                            \
+  (json).reserve(std::size(json) + simdjson::SIMDJSON_PADDING); \
+  auto doc = parser.iterate(json);                              \
+  std::int32_t code = doc["code"].get_int64();                  \
+  if (code == LoginExpired) {                                   \
+    klib::warn("Login expired, please log in again");           \
+  } else if (code == PasswordError) {                           \
+    klib::error("Password error");                              \
+  } else if (code != Ok) {                                      \
+    klib::error("HTTP request failed: {}", json);               \
+  }
+
+std::string login_serialize(const std::string &login_name,
+                            const std::string &password) {
+  boost::json::object obj;
+  obj["client"] = "web";
+  obj["gz"] = 0;
+  obj["is_encrypted"] = 0;
+  obj["platform"] = "pc";
+  obj["sign"] = "";
+
+  boost::json::object d;
+  d["username"] = login_name;
+  d["password"] = password;
+
+  obj["d"] = d;
+
+  return boost::json::serialize(obj);
+}
+
+std::string http_post_serialize(const std::string &security_key) {
+  boost::json::object obj;
+  obj["client"] = "web";
+  obj["gz"] = 0;
+  obj["is_encrypted"] = 0;
+  obj["platform"] = "pc";
+  obj["sign"] = "";
+
+  boost::json::object d;
+  d["security_key"] = security_key;
+
+  auto first = security_key.find(':');
+  auto last = security_key.rfind(':');
+  auto uid = security_key.substr(first + 1, last - first);
+  d["uid"] = std::stoi(uid);
+
+  obj["d"] = d;
+
+  return boost::json::serialize(obj);
+}
+
+UserInfo json_to_user_info(std::string json) {
+  JSON_BASE_LIGHTNOVEL(json)
+
+  UserInfo user_info;
+  user_info.login_expired_ = (code == LoginExpired);
+
+  if (!user_info.login_expired_) {
+    user_info.nick_name_ = doc["data"]["nickname"].get_string().value();
+  }
+
+  return user_info;
+}
+
+LoginInfo json_to_login_info(std::string json) {
+  JSON_BASE_LIGHTNOVEL(json)
+  if (code == LoginExpired) {
+    klib::error("Failed to login");
+  }
+
+  LoginInfo result;
+  result.security_key_ = doc["data"]["security_key"].get_string().value();
+
+  UserInfo user_info;
+  user_info.nick_name_ = doc["data"]["nickname"].get_string().value();
+  result.user_info_ = user_info;
+
+  return result;
+}
+
+}  // namespace lightnovel
+
 namespace ciweimao {
 
 enum Code { Ok = 100000, LoginExpired = 200100 };

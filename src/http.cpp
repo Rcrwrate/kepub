@@ -11,6 +11,7 @@
 #include <klib/url.h>
 #include <klib/util.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/json.hpp>
 
 namespace kepub {
 
@@ -84,8 +85,55 @@ std::string http_get(const std::string &url, const std::string &proxy) {
 
 namespace lightnovel {
 
-std::string http_get(const std::string &url, const std::string &proxy) {
-  return kepub::http_get(url, proxy);
+std::string http_post(const std::string &url, const std::string &json,
+                      const std::string &proxy) {
+  request.set_browser_user_agent();
+  if (!std::empty(proxy)) {
+    request.set_proxy(proxy);
+  } else {
+    request.set_no_proxy();
+  }
+  request.set_doh_url("https://dns.google/dns-query");
+#ifndef NDEBUG
+  request.verbose(true);
+#endif
+
+  auto response = request.post(url, json);
+
+  auto status = response.status();
+  if (status != klib::HttpStatus::HTTP_STATUS_OK) {
+    report_http_error(status, url);
+  }
+
+  return response.text();
+}
+
+std::string http_get(const std::string &url, const std::string &security_key,
+                     const std::string &proxy) {
+  request.set_browser_user_agent();
+  if (!std::empty(proxy)) {
+    request.set_proxy(proxy);
+  } else {
+    request.set_no_proxy();
+  }
+
+  request.set_doh_url("https://dns.google/dns-query");
+
+  boost::json::object obj;
+  obj["security_key"] = security_key;
+  request.set_cookie({{"token", boost::json::serialize(obj)}});
+#ifndef NDEBUG
+  request.verbose(true);
+#endif
+
+  auto response = request.get(url);
+
+  auto status = response.status();
+  if (status != klib::HttpStatus::HTTP_STATUS_OK) {
+    report_http_error(status, url);
+  }
+
+  return response.text();
 }
 
 std::string http_get_rss(const std::string &url, const std::string &proxy) {

@@ -10,8 +10,10 @@
 #include <boost/algorithm/string.hpp>
 #include <pugixml.hpp>
 
+#include "aes.h"
 #include "html.h"
 #include "http.h"
+#include "json.h"
 #include "trans.h"
 #include "util.h"
 #include "version.h"
@@ -25,8 +27,60 @@ using namespace kepub::lightnovel;
 
 namespace {
 
-pugi::xml_document get_xml(const std::string &url, const std::string &proxy) {
-  auto response = http_get(url, proxy);
+constexpr std::string_view security_key_path = "/tmp/lightnovel";
+
+bool show_user_info(const std::string &security_key, const std::string &proxy) {
+  auto response = http_post("https://www.lightnovel.us/proxy/api/user/info",
+                            http_post_serialize(security_key), proxy);
+  const auto info = json_to_user_info(response);
+
+  if (info.login_expired_) {
+    return false;
+  } else {
+    klib::info("Use existing login token, nick name: {}", info.nick_name_);
+    return true;
+  }
+}
+
+std::optional<std::string> try_read_security_key(const std::string &proxy) {
+  if (!std::filesystem::exists(security_key_path)) {
+    klib::warn("Login required to access this resource");
+    return {};
+  }
+
+  std::string security_key;
+  try {
+    security_key = kepub::decrypt(klib::read_file(security_key_path, false));
+  } catch (...) {
+    klib::warn("Failed to read local user information, please enter again");
+    return {};
+  }
+
+  if (show_user_info(security_key, proxy)) {
+    return security_key;
+  } else {
+    return {};
+  }
+}
+
+void write_security_key(const std::string &security_key) {
+  klib::write_file(security_key_path, false, kepub::encrypt(security_key));
+}
+
+std::string login(const std::string &login_name, const std::string &password,
+                  const std::string &proxy) {
+  auto response = http_post("https://www.lightnovel.us/proxy/api/user/login",
+                            login_serialize(login_name, password), proxy);
+  auto info = json_to_login_info(response);
+
+  klib::info("Login successful, nick name: {}", info.user_info_.nick_name_);
+  return info.security_key_;
+}
+
+pugi::xml_document get_xml(const std::string &url,
+                           const std::string &security_key,
+                           const std::string &proxy) {
+  auto response = http_get(url, security_key, proxy);
   return kepub::html_to_xml(response);
 }
 
@@ -108,11 +162,23 @@ int main(int argc, const char *argv[]) try {
     klib::info("Use proxy: {}", proxy);
   }
 
+  std::string security_key;
+  if (auto may_security_key = try_read_security_key(proxy);
+      may_security_key.has_value()) {
+    security_key = *may_security_key;
+  } else {
+    auto login_name = kepub::get_login_name();
+    auto password = kepub::get_password();
+    security_key = login(login_name, password, proxy);
+    klib::cleanse(password);
+    write_security_key(security_key);
+  }
+
   const std::string url = "https://www.lightnovel.us/cn/detail/" + book_id;
   klib::info("Download novel from {}", url);
 
   klib::info("Start downloading novel content");
-  auto doc = get_xml(url, proxy);
+  auto doc = get_xml(url, security_key, proxy);
 
   auto content = get_content(doc, translation, proxy);
   auto book_name = content.front();

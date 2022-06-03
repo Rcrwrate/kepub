@@ -14,6 +14,29 @@ void KEPUB_EXPORT json_base(std::string json);
 
 }  // namespace masiro
 
+namespace lightnovel {
+
+std::string KEPUB_EXPORT login_serialize(const std::string &login_name,
+                                         const std::string &password);
+
+std::string KEPUB_EXPORT http_post_serialize(const std::string &security_key);
+
+struct KEPUB_EXPORT UserInfo {
+  std::string nick_name_;
+  bool login_expired_ = false;
+};
+
+UserInfo KEPUB_EXPORT json_to_user_info(std::string json);
+
+struct KEPUB_EXPORT LoginInfo {
+  std::string security_key_;
+  UserInfo user_info_;
+};
+
+LoginInfo KEPUB_EXPORT json_to_login_info(std::string json);
+
+}  // namespace lightnovel
+
 namespace ciweimao {
 
 std::string KEPUB_EXPORT serialize(const std::string &account,
