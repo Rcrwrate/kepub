@@ -258,6 +258,7 @@ PS：以前的《魅魔的我与叛教的不信仰者》为原版，现在发布
     <item id="chapter225.xhtml" href="text/chapter225.xhtml" media-type="application/xhtml+xml" />
     <item id="chapter226.xhtml" href="text/chapter226.xhtml" media-type="application/xhtml+xml" />
     <item id="chapter227.xhtml" href="text/chapter227.xhtml" media-type="application/xhtml+xml" />
+    <item id="chapter228.xhtml" href="text/chapter228.xhtml" media-type="application/xhtml+xml" />
   </manifest>
   <spine>
     <itemref idref="introduction.xhtml" />
@@ -488,5 +489,6 @@ PS：以前的《魅魔的我与叛教的不信仰者》为原版，现在发布
     <itemref idref="chapter225.xhtml" />
     <itemref idref="chapter226.xhtml" />
     <itemref idref="chapter227.xhtml" />
+    <itemref idref="chapter228.xhtml" />
   </spine>
 </package>
