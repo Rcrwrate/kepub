@@ -378,6 +378,9 @@ std::u32string custom_trans(const std::u32string &str, bool translation) {
           {U'∶', U'：'},
           {U'‧', U'·'},
           {U'・', U'·'},
+          {U'﹑', U'、'},
+          {U'〜', U'～'},
+          {U'︰', U'：'},
       };
       if (auto iter = map.find(c); iter != std::end(map)) {
         c = iter->second;
