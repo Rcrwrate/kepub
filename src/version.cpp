@@ -27,7 +27,8 @@ std::string version_str() {
   result += fmt::format(FMT_COMPILE("parallel-hashmap/{}.{}.{} "),
                         PHMAP_VERSION_MAJOR, PHMAP_VERSION_MINOR,
                         PHMAP_VERSION_PATCH);
-  result += fmt::format("RE2/2022.04.01 ");
+  // NOTE
+  result += fmt::format("RE2/2022.06.01 ");
   result += fmt::format(FMT_COMPILE("oneTBB/{}.{}.{} "), TBB_VERSION_MAJOR,
                         TBB_VERSION_MINOR, TBB_VERSION_PATCH);
   result += fmt::format(FMT_COMPILE("Boost/{}.{}.{} "), BOOST_VERSION / 100000,
@@ -43,6 +44,7 @@ std::string version_str() {
   result +=
       fmt::format(FMT_COMPILE("pugixml/{}.{}.{} "), PUGIXML_VERSION / 1000,
                   PUGIXML_VERSION / 10 % 100, PUGIXML_VERSION % 10);
+  // NOTE
   result += "OpenCC/1.1.3 ";
   // NOTE
   result += "indicators/2.2.0\n";
