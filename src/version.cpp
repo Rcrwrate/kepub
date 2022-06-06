@@ -45,7 +45,7 @@ std::string version_str() {
       fmt::format(FMT_COMPILE("pugixml/{}.{}.{} "), PUGIXML_VERSION / 1000,
                   PUGIXML_VERSION / 10 % 100, PUGIXML_VERSION % 10);
   // NOTE
-  result += "OpenCC/1.1.3 ";
+  result += "OpenCC/1.1.4 ";
   // NOTE
   result += "indicators/2.2.0\n";
 

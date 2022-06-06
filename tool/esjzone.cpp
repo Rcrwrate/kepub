@@ -41,6 +41,7 @@ std::pair<kepub::BookInfo, std::vector<kepub::Volume>> get_info(
   klib::info("Download novel from {}", url);
   const auto doc = get_xml(url, proxy);
 
+  // book name
   auto node = doc.select_node(
                      "/html/body/div[@class='offcanvas-wrapper']/section/div/"
                      "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='row "
@@ -48,35 +49,40 @@ std::pair<kepub::BookInfo, std::vector<kepub::Volume>> get_info(
                   .node();
   CHECK_NODE(node);
   book_info.name_ = kepub::trans_str(node.text().as_string(), translation);
+  klib::info("Book name: {}", book_info.name_);
 
+  // author
   node = doc.select_node(
                 "/html/body/div[@class='offcanvas-wrapper']/section/div/"
                 "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='row "
                 "mb-3']/div[@class='col-md-9 book-detail']/ul")
              .node();
-  CHECK_NODE(node);
-
-  std::string prefix = "作者:";
-  for (const auto &child : node.children()) {
-    if (child.child("strong").text().as_string() == prefix) {
-      book_info.author_ =
-          kepub::trans_str(child.child("a").text().as_string(), translation);
+  if (!node.empty()) {
+    std::string prefix = "作者:";
+    for (const auto &child : node.children()) {
+      if (child.child("strong").text().as_string() == prefix) {
+        book_info.author_ =
+            kepub::trans_str(child.child("a").text().as_string(), translation);
+      }
     }
+    klib::info("Author: {}", book_info.author_);
   }
 
+  // introduction
   node =
       doc.select_node(
              "/html/body/div[@class='offcanvas-wrapper']/section/div/"
              "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='bg-secondary "
              "p-20 margin-top-1x']/div/div/div")
           .node();
-  CHECK_NODE(node);
-
-  for (const auto &child : node.children()) {
-    kepub::push_back(book_info.introduction_,
-                     kepub::trans_str(child.text().as_string(), translation));
+  if (!node.empty()) {
+    for (const auto &child : node.children()) {
+      kepub::push_back(book_info.introduction_,
+                       kepub::trans_str(child.text().as_string(), translation));
+    }
   }
 
+  // chapters
   node = doc.select_node(
                 "/html/body/div[@class='offcanvas-wrapper']/section/div/"
                 "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='row "
@@ -103,32 +109,32 @@ std::pair<kepub::BookInfo, std::vector<kepub::Volume>> get_info(
     }
   }
 
+  // cover
   node = doc.select_node(
                 "/html/body/div[@class='offcanvas-wrapper']/section/div/"
                 "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='row "
                 "mb-3']/div[@class='col-md-3']/div[@class='product-gallery "
                 "text-center mb-3']/a/img")
              .node();
-  CHECK_NODE(node);
-  book_info.cover_path_ = node.attribute("src").as_string();
+  if (!node.empty()) {
+    book_info.cover_path_ = node.attribute("src").as_string();
+    klib::info("Cover url: {}", book_info.cover_path_);
 
-  klib::info("Book name: {}", book_info.name_);
-  klib::info("Author: {}", book_info.author_);
-  klib::info("Cover url: {}", book_info.cover_path_);
+    try {
+      const auto image = http_get(book_info.cover_path_, proxy);
+      const auto image_extension = kepub::image_to_extension(image);
 
-  try {
-    const auto image = http_get(book_info.cover_path_, proxy);
-    const auto image_extension = kepub::image_to_extension(image);
-
-    if (image_extension) {
-      std::string cover_name = "cover" + *image_extension;
-      klib::write_file(cover_name, true, image);
-      klib::info("Cover downloaded successfully: {}", cover_name);
-    } else {
-      klib::warn("Image is not a supported format: {}", book_info.cover_path_);
+      if (image_extension) {
+        std::string cover_name = "cover" + *image_extension;
+        klib::write_file(cover_name, true, image);
+        klib::info("Cover downloaded successfully: {}", cover_name);
+      } else {
+        klib::warn("Image is not a supported format: {}",
+                   book_info.cover_path_);
+      }
+    } catch (const klib::RuntimeError &err) {
+      klib::warn("{}: {}", err.what(), book_info.cover_path_);
     }
-  } catch (const klib::RuntimeError &err) {
-    klib::warn("{}: {}", err.what(), book_info.cover_path_);
   }
 
   return {book_info, volumes};
