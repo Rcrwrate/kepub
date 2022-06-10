@@ -1,1 +1,2 @@
-test/extra_test/* linguist-vendored
+# https://github.com/github/linguist/blob/master/docs/overrides.md#vendored-code
+test/extra_test/** linguist-vendored
