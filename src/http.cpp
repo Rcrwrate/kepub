@@ -180,11 +180,18 @@ namespace ciweimao {
 
 namespace {
 
-const std::string app_version = "2.9.290";
 const std::string device_token = "ciweimao_";
+
+const std::string app_version = "2.9.282";
+const std::string app_version_new = "2.9.290";
+
 const std::string user_agent =
+    "Android  com.kuangxiangciweimao.novel  2.9.282,OnePlus, ONEPLUS A3010, "
+    "25, 7.1.1";
+const std::string user_agent_new =
     "Android  com.kuangxiangciweimao.novel  2.9.290,OnePlus, ONEPLUS A3010, "
     "25, 7.1.1";
+
 const static std::string user_agent_rss =
     "Dalvik/2.1.0 (Linux; U; Android 7.1.1; ONEPLUS A3010 Build/NMF26F)";
 const static std::string user_agent_geetest = "okhttp/4.8.0";
@@ -226,14 +233,26 @@ std::string http_get_geetest(const std::string &url) {
 }
 
 std::string http_post(const std::string &url,
-                      phmap::flat_hash_map<std::string, std::string> data) {
+                      phmap::flat_hash_map<std::string, std::string> data,
+                      bool new_version) {
   request.set_no_proxy();
-  request.set_user_agent(user_agent);
+
+  if (new_version) {
+    request.set_user_agent(user_agent_new);
+  } else {
+    request.set_user_agent(user_agent);
+  }
+
 #ifndef NDEBUG
   request.verbose(true);
 #endif
 
-  data.emplace("app_version", app_version);
+  if (new_version) {
+    data.emplace("app_version", app_version_new);
+  } else {
+    data.emplace("app_version", app_version);
+  }
+
   data.emplace("device_token", device_token);
 
   auto response = request.post(url, data, {{"Connection", "keep-alive"}});

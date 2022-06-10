@@ -36,11 +36,12 @@ namespace {
 
 const auto token_path = klib::get_env("HOME").value_or("/tmp") + "/.ciweimao";
 
-bool show_user_info(const Token &token) {
+bool show_user_info(const Token &token, bool new_version) {
   auto response = http_post("https://app.hbooker.com/reader/get_my_info",
                             {{"account", token.account_},
                              {"reader_id", token.reader_id_},
-                             {"login_token", token.login_token_}});
+                             {"login_token", token.login_token_}},
+                            new_version);
   const auto info = json_to_user_info(kepub::decrypt_no_iv(response));
 
   if (info.login_expired_) {
@@ -51,7 +52,7 @@ bool show_user_info(const Token &token) {
   }
 }
 
-std::optional<Token> try_read_token() {
+std::optional<Token> try_read_token(bool new_version) {
   if (!std::filesystem::exists(token_path)) {
     klib::warn("Login required to access this resource");
     return {};
@@ -67,7 +68,7 @@ std::optional<Token> try_read_token() {
     return {};
   }
 
-  if (show_user_info(token)) {
+  if (show_user_info(token, new_version)) {
     return token;
   } else {
     return {};
@@ -80,15 +81,17 @@ void write_token(const Token &token) {
                                             token.reader_id_, token.account_)));
 }
 
-bool use_geetest() {
-  auto response = http_post("https://app.hbooker.com/signup/use_geetest");
+bool use_geetest(bool new_version) {
+  auto response =
+      http_post("https://app.hbooker.com/signup/use_geetest", {}, new_version);
   return json_to_use_geetest(kepub::decrypt_no_iv(response));
 }
 
-LoginInfo login(const std::string &login_name, const std::string &password) {
+LoginInfo login(const std::string &login_name, const std::string &password,
+                bool new_version) {
   std::string response;
 
-  if (use_geetest()) {
+  if (new_version && use_geetest(new_version)) {
     klib::info("Captcha required");
 
     auto [challenge, validate] = get_geetest_validate(login_name);
@@ -97,10 +100,12 @@ LoginInfo login(const std::string &login_name, const std::string &password) {
                           {"passwd", password},
                           {"geetest_seccode", validate + "|jordan"},
                           {"geetest_validate", validate},
-                          {"geetest_challenge", challenge}});
+                          {"geetest_challenge", challenge}},
+                         new_version);
   } else {
     response = http_post("https://app.hbooker.com/signup/login",
-                         {{"login_name", login_name}, {"passwd", password}});
+                         {{"login_name", login_name}, {"passwd", password}},
+                         new_version);
   }
 
   auto info = json_to_login_info(kepub::decrypt_no_iv(response));
@@ -109,11 +114,13 @@ LoginInfo login(const std::string &login_name, const std::string &password) {
   return info;
 }
 
-kepub::BookInfo get_book_info(const Token &token, const std::string &book_id) {
+kepub::BookInfo get_book_info(const Token &token, const std::string &book_id,
+                              bool new_version) {
   auto response = http_post("https://app.hbooker.com/book/get_info_by_id",
                             {{"account", token.account_},
                              {"login_token", token.login_token_},
-                             {"book_id", book_id}});
+                             {"book_id", book_id}},
+                            new_version);
   auto info = json_to_book_info(kepub::decrypt_no_iv(response));
 
   klib::info("Book name: {}", info.name_);
@@ -139,24 +146,28 @@ kepub::BookInfo get_book_info(const Token &token, const std::string &book_id) {
 }
 
 std::vector<kepub::Volume> get_volume_chapter(const Token &token,
-                                              const std::string &book_id) {
+                                              const std::string &book_id,
+                                              bool new_version) {
   klib::info("Start getting chapter information");
 
   auto response = http_post(
       "https://app.hbooker.com/chapter/get_updated_chapter_by_division_new",
       {{"account", token.account_},
        {"login_token", token.login_token_},
-       {"book_id", book_id}});
+       {"book_id", book_id}},
+      new_version);
 
   return json_to_volumes(kepub::decrypt_no_iv(response));
 }
 
 std::string get_chapter_command(const Token &token,
-                                const std::string &chapter_id) {
+                                const std::string &chapter_id,
+                                bool new_version) {
   auto response = http_post("https://app.hbooker.com/chapter/get_chapter_cmd",
                             {{"account", token.account_},
                              {"login_token", token.login_token_},
-                             {"chapter_id", chapter_id}});
+                             {"chapter_id", chapter_id}},
+                            new_version);
 
   return json_to_chapter_command(kepub::decrypt_no_iv(response));
 }
@@ -175,14 +186,16 @@ std::optional<std::string> parse_image_url(const std::string &line) {
 }
 
 std::vector<std::string> get_content(const Token &token,
-                                     std::uint64_t chapter_id) {
+                                     std::uint64_t chapter_id,
+                                     bool new_version) {
   const auto id = std::to_string(chapter_id);
-  const auto chapter_command = get_chapter_command(token, id);
+  const auto chapter_command = get_chapter_command(token, id, new_version);
   auto response = http_post("https://app.hbooker.com/chapter/get_cpt_ifm",
                             {{"account", token.account_},
                              {"login_token", token.login_token_},
                              {"chapter_id", id},
-                             {"chapter_command", chapter_command}});
+                             {"chapter_command", chapter_command}},
+                            new_version);
   const auto encrypt_content_str =
       json_to_chapter_text(kepub::decrypt_no_iv(response));
   const auto content_str =
@@ -241,6 +254,12 @@ int main(int argc, const char *argv[]) try {
           CLI::Range(1U, hardware_concurrency > 4 ? hardware_concurrency : 4))
       ->default_val(1);
 
+  // TODO Delete when old version is not available
+  bool new_version = false;
+  app.add_flag("--new-version", new_version,
+               "With newer versions, you may need to open your browser and "
+               "pass the captcha");
+
   CLI11_PARSE(app, argc, argv)
 
   kepub::check_is_book_id(book_id);
@@ -251,18 +270,18 @@ int main(int argc, const char *argv[]) try {
   }
 
   Token token;
-  if (auto may_token = try_read_token(); may_token.has_value()) {
+  if (auto may_token = try_read_token(new_version); may_token.has_value()) {
     token = *may_token;
   } else {
     auto login_name = kepub::get_login_name();
     auto password = kepub::get_password();
-    token = login(login_name, password).token_;
+    token = login(login_name, password, new_version).token_;
     klib::cleanse(password);
     write_token(token);
   }
 
-  auto book_info = get_book_info(token, book_id);
-  auto volumes = get_volume_chapter(token, book_id);
+  auto book_info = get_book_info(token, book_id, new_version);
+  auto volumes = get_volume_chapter(token, book_id, new_version);
 
   std::size_t chapter_count = 0;
   for (const auto &volume : volumes) {
@@ -282,7 +301,8 @@ int main(int argc, const char *argv[]) try {
             volume.chapters_, [&](kepub::Chapter &chapter) {
               bar.set_postfix_text(chapter.title_);
               bar.tick();
-              chapter.texts_ = get_content(token, chapter.chapter_id_);
+              chapter.texts_ =
+                  get_content(token, chapter.chapter_id_, new_version);
             });
       });
     });
