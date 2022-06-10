@@ -27,6 +27,7 @@ Crawl novels from sfacg, ciweimao, esjzone, lightnovel and masiro; generate, app
 - pugixml ([MIT License](https://github.com/zeux/pugixml/blob/master/LICENSE.md))
 - OpenCC ([Apache License 2.0](https://github.com/BYVoid/OpenCC/blob/master/LICENSE))
 - indicators ([MIT License](https://github.com/p-ranav/indicators/blob/master/LICENSE))
+- cpp-httplib ([MIT License](https://github.com/yhirose/cpp-httplib/blob/master/LICENSE))
 
 ## Font
 

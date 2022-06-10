@@ -82,6 +82,7 @@ find_package(simdjson REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
 find_package(TBB REQUIRED)
 find_package(re2 REQUIRED)
+find_package(httplib REQUIRED)
 
 add_definitions(-DDBG_MACRO_NO_WARNING)
 if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
@@ -131,7 +132,8 @@ target_link_libraries(
           PkgConfig::opencc
           PkgConfig::marisa
           TBB::tbb
-          re2::re2)
+          re2::re2
+          httplib::httplib)
 set_target_properties(${KEPUB_LIBRARY} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 # ---------------------------------------------------------------------------------------
@@ -156,7 +158,8 @@ target_link_libraries(
           PkgConfig::opencc
           PkgConfig::marisa
           TBB::tbb
-          re2::re2)
+          re2::re2
+          httplib::httplib)
 set_target_properties(
   ${KEPUB_LIBRARY}-shared
   PROPERTIES OUTPUT_NAME ${PROJECT_NAME}

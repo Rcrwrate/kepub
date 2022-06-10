@@ -2,6 +2,7 @@
 
 #include <fmt/compile.h>
 #include <fmt/format.h>
+#include <httplib.h>
 #include <klib/version.h>
 #include <mimalloc.h>
 #include <oneapi/tbb/version.h>
@@ -44,6 +45,7 @@ std::string version_str() {
   result +=
       fmt::format(FMT_COMPILE("pugixml/{}.{}.{} "), PUGIXML_VERSION / 1000,
                   PUGIXML_VERSION / 10 % 100, PUGIXML_VERSION % 10);
+  result += fmt::format(FMT_COMPILE("cpp-httplib/{} "), CPPHTTPLIB_VERSION);
   // NOTE
   result += "OpenCC/1.1.4 ";
   // NOTE
