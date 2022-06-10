@@ -47,7 +47,11 @@ std::pair<kepub::BookInfo, std::vector<kepub::Volume>> get_info(
                      "div[@class='col-xl-9 col-lg-8 p-r-30']/div[@class='row "
                      "mb-3']/div[@class='col-md-9 book-detail']/h2")
                   .node();
-  CHECK_NODE(node);
+  if (std::empty(node)) {
+    klib::error(
+        "Unable to get the book title, the novel may have been deleted");
+  }
+
   book_info.name_ = kepub::trans_str(node.text().as_string(), translation);
   klib::info("Book name: {}", book_info.name_);
 

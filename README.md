@@ -49,6 +49,18 @@ sfacg book-id
 gen-epub book-name.txt
 ```
 
+Note that when opening a browser, Linux uses
+
+```bash
+xdg-open URL
+```
+
+WSL2 uses
+
+```powershell
+powershell.exe /c start URL
+```
+
 ## Roadmap
 
 - Rewritten in Rust:
