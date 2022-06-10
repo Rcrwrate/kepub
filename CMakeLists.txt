@@ -105,6 +105,8 @@ include_directories(${KEPUB_BINARY_DIR})
 file(COPY "${KEPUB_SOURCE_DIR}/blob/SourceHanSansSC-Bold.ttf"
      DESTINATION ${KEPUB_BINARY_DIR})
 file(COPY "${KEPUB_SOURCE_DIR}/blob/style.css" DESTINATION ${KEPUB_BINARY_DIR})
+file(COPY "${KEPUB_SOURCE_DIR}/blob/geetest.js" DESTINATION ${KEPUB_BINARY_DIR})
+file(COPY "${KEPUB_SOURCE_DIR}/blob/index.html" DESTINATION ${KEPUB_BINARY_DIR})
 
 add_library(blob STATIC "${KEPUB_SOURCE_DIR}/src/blob.s")
 target_compile_options(blob PRIVATE "-Wno-unused-command-line-argument")

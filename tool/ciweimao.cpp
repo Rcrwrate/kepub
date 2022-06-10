@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <exception>
 #include <filesystem>
 #include <optional>
@@ -17,6 +18,7 @@
 #include <pugixml.hpp>
 
 #include "aes.h"
+#include "geetest.h"
 #include "http.h"
 #include "json.h"
 #include "novel.h"
@@ -33,12 +35,13 @@ using namespace kepub::ciweimao;
 
 namespace {
 
-constexpr std::string_view token_path = "/tmp/ciweimao";
+const auto token_path = std::getenv("HOME") + std::string("/.ciweimao");
 
 bool show_user_info(const Token &token) {
-  auto response = http_post(
-      "https://app.hbooker.com/reader/get_my_info",
-      {{"account", token.account_}, {"login_token", token.login_token_}});
+  auto response = http_post("https://app.hbooker.com/reader/get_my_info",
+                            {{"account", token.account_},
+                             {"reader_id", token.reader_id_},
+                             {"login_token", token.login_token_}});
   const auto info = json_to_user_info(kepub::decrypt_no_iv(response));
 
   if (info.login_expired_) {
@@ -73,14 +76,34 @@ std::optional<Token> try_read_token() {
 }
 
 void write_token(const Token &token) {
-  klib::write_file(
-      token_path, true,
-      kepub::encrypt(serialize(token.account_, token.login_token_)));
+  klib::write_file(token_path, true,
+                   kepub::encrypt(serialize(token.login_token_,
+                                            token.reader_id_, token.account_)));
+}
+
+bool use_geetest() {
+  auto response = http_post("https://app.hbooker.com/signup/use_geetest");
+  return json_to_use_geetest(kepub::decrypt_no_iv(response));
 }
 
 LoginInfo login(const std::string &login_name, const std::string &password) {
-  auto response = http_post("https://app.hbooker.com/signup/login",
-                            {{"login_name", login_name}, {"passwd", password}});
+  std::string response;
+
+  if (use_geetest()) {
+    klib::info("Captcha required");
+
+    auto [challenge, validate] = get_geetest_validate(login_name);
+    response = http_post("https://app.hbooker.com/signup/login",
+                         {{"login_name", login_name},
+                          {"passwd", password},
+                          {"geetest_seccode", validate + "|jordan"},
+                          {"geetest_validate", validate},
+                          {"geetest_challenge", challenge}});
+  } else {
+    response = http_post("https://app.hbooker.com/signup/login",
+                         {{"login_name", login_name}, {"passwd", password}});
+  }
+
   auto info = json_to_login_info(kepub::decrypt_no_iv(response));
 
   klib::info("Login successful, nick name: {}", info.user_info_.nick_name_);

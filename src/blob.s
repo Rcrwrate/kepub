@@ -12,6 +12,10 @@
     .global TWVariantsRev_size
     .global TSCharacters
     .global TSCharacters_size
+    .global geetest_js
+    .global geetest_js_size
+    .global index_html
+    .global index_html_size
     .section .rodata
 
 font:
@@ -55,3 +59,15 @@ TSCharacters:
 TSCharacters_end:
 TSCharacters_size:
     .int TSCharacters_end - TSCharacters
+
+geetest_js:
+    .incbin "geetest.js"
+geetest_js_end:
+geetest_js_size:
+    .int geetest_js_end - geetest_js
+
+index_html:
+    .incbin "index.html"
+index_html_end:
+index_html_size:
+    .int index_html_end - index_html

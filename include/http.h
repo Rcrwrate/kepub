@@ -47,9 +47,11 @@ namespace ciweimao {
 
 std::string KEPUB_EXPORT http_get_rss(const std::string &url);
 
+std::string KEPUB_EXPORT http_get_geetest(const std::string &url);
+
 std::string KEPUB_EXPORT
 http_post(const std::string &url,
-          phmap::flat_hash_map<std::string, std::string> data);
+          phmap::flat_hash_map<std::string, std::string> data = {});
 
 }  // namespace ciweimao
 

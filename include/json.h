@@ -39,12 +39,14 @@ LoginInfo KEPUB_EXPORT json_to_login_info(std::string json);
 
 namespace ciweimao {
 
-std::string KEPUB_EXPORT serialize(const std::string &account,
-                                   const std::string &login_token);
+std::string KEPUB_EXPORT serialize(const std::string &login_token,
+                                   const std::string &reader_id,
+                                   const std::string &account);
 
 struct KEPUB_EXPORT Token {
-  std::string account_;
   std::string login_token_;
+  std::string reader_id_;
+  std::string account_;
 };
 
 Token KEPUB_EXPORT json_to_token(std::string json);
@@ -60,6 +62,16 @@ struct KEPUB_EXPORT LoginInfo {
   Token token_;
   UserInfo user_info_;
 };
+
+bool KEPUB_EXPORT json_to_use_geetest(std::string json);
+
+struct KEPUB_EXPORT GeetestInfo {
+  std::string gt_;
+  std::string challenge_;
+  bool new_captcha_;
+};
+
+GeetestInfo KEPUB_EXPORT json_to_geetest_info(std::string json);
 
 LoginInfo KEPUB_EXPORT json_to_login_info(std::string json);
 

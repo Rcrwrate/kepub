@@ -137,11 +137,13 @@ enum Code { Ok = 100000, LoginExpired = 200100 };
     klib::error(doc["tip"].get_string().value());                       \
   }
 
-std::string serialize(const std::string &account,
-                      const std::string &login_token) {
+std::string serialize(const std::string &login_token,
+                      const std::string &reader_id,
+                      const std::string &account) {
   boost::json::object obj;
-  obj["account"] = account;
   obj["login_token"] = login_token;
+  obj["reader_id"] = reader_id;
+  obj["account"] = account;
 
   return boost::json::serialize(obj);
 }
@@ -153,8 +155,9 @@ Token json_to_token(std::string json) {
 
   Token result;
 
-  result.account_ = doc["account"].get_string().value();
   result.login_token_ = doc["login_token"].get_string().value();
+  result.reader_id_ = doc["reader_id"].get_string().value();
+  result.account_ = doc["account"].get_string().value();
 
   return result;
 }
@@ -173,6 +176,33 @@ UserInfo json_to_user_info(std::string json) {
   return result;
 }
 
+bool json_to_use_geetest(std::string json) {
+  JSON_BASE_CIWEIMAO(json)
+
+  std::string need_use_geetest(
+      doc["data"]["need_use_geetest"].get_string().value());
+
+  return need_use_geetest == "1";
+}
+
+GeetestInfo json_to_geetest_info(std::string json) {
+  simdjson::ondemand::parser parser;
+  json.reserve(std::size(json) + simdjson::SIMDJSON_PADDING);
+
+  auto doc = parser.iterate(json);
+  std::int32_t code = doc["success"].get_int64();
+  if (code != 1) {
+    klib::error("Get geetest info failed");
+  }
+
+  GeetestInfo info;
+  info.gt_ = doc["gt"].get_string().value();
+  info.challenge_ = doc["challenge"].get_string().value();
+  info.new_captcha_ = doc["new_captcha"].get_bool().value();
+
+  return info;
+}
+
 LoginInfo json_to_login_info(std::string json) {
   JSON_BASE_CIWEIMAO(json)
   if (code == LoginExpired) {
@@ -184,6 +214,7 @@ LoginInfo json_to_login_info(std::string json) {
   result.token_.login_token_ = data["login_token"].get_string().value();
 
   auto reader_info = data["reader_info"];
+  result.token_.reader_id_ = reader_info["reader_id"].get_string().value();
   result.token_.account_ = reader_info["account"].get_string().value();
 
   UserInfo user_info;

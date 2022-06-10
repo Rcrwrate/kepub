@@ -180,19 +180,37 @@ namespace ciweimao {
 
 namespace {
 
-const std::string app_version = "2.9.282";
+const std::string app_version = "2.9.290";
 const std::string device_token = "ciweimao_";
 const std::string user_agent =
-    "Android  com.kuangxiangciweimao.novel  2.9.282,OnePlus, ONEPLUS A3010, "
+    "Android  com.kuangxiangciweimao.novel  2.9.290,OnePlus, ONEPLUS A3010, "
     "25, 7.1.1";
 const static std::string user_agent_rss =
     "Dalvik/2.1.0 (Linux; U; Android 7.1.1; ONEPLUS A3010 Build/NMF26F)";
+const static std::string user_agent_geetest = "okhttp/4.8.0";
 
 }  // namespace
 
 std::string http_get_rss(const std::string &url) {
   request.set_no_proxy();
   request.set_user_agent(user_agent_rss);
+#ifndef NDEBUG
+  request.verbose(true);
+#endif
+
+  auto response = request.get(url, {{"Connection", "keep-alive"}});
+
+  auto status = response.status();
+  if (status != klib::HttpStatus::HTTP_STATUS_OK) {
+    report_http_error(status, url);
+  }
+
+  return response.text();
+}
+
+std::string http_get_geetest(const std::string &url) {
+  request.set_no_proxy();
+  request.set_user_agent(user_agent_geetest);
 #ifndef NDEBUG
   request.verbose(true);
 #endif
