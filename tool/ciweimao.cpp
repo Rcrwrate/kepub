@@ -256,7 +256,7 @@ int main(int argc, const char *argv[]) try {
 
   // TODO Delete when old version is not available
   bool new_version = false;
-  app.add_flag("--new-version", new_version,
+  app.add_flag("-n,--new-version", new_version,
                "With newer versions, you may need to open your browser and "
                "pass the captcha");
 

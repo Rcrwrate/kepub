@@ -4,7 +4,7 @@ local -a args
 
 args=(
   '(-m --multithreading)'{-m,--multithreading}'[Maximum number of concurrency to use when downloading]'
-  '(--new-version)'{--new-version}'[With newer versions, you may need to open your browser and pass the captcha]'
+  '(-n --new-version)'{-n,--new-version}'[With newer versions, you may need to open your browser and pass the captcha]'
   '(- : *)'{-h,--help}'[Print this help message and exit]'
   '(- : *)'{-v,--version}'[Display program version information and exit]'
 )
