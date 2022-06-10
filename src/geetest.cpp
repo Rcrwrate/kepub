@@ -2,7 +2,6 @@
 
 #include <sys/utsname.h>
 #include <unistd.h>
-#include <wait.h>
 
 #include <cerrno>
 #include <chrono>
@@ -46,9 +45,9 @@ void open_browser(const std::string& url) {
 
   // WSL
   if (std::string(name.release).find("microsoft") != std::string::npos) {
-    klib::exec("powershell.exe /c start " + url);
+    klib::pipe("powershell.exe /c start " + url);
   } else {
-    klib::exec("xdg-open " + url);
+    klib::pipe("xdg-open " + url);
   }
 }
 
@@ -97,9 +96,7 @@ std::pair<std::string, std::string> get_geetest_validate(
   } else {
     server.listen("localhost", 3000);
 
-    if (waitpid(pid, nullptr, 0) == -1) {
-      klib::error("waitpid() failed: {}", strerror(errno));
-    }
+    klib::wait_for_child_process();
   }
 
   return {geetest_info.challenge_, validate};

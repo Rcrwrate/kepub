@@ -1,6 +1,5 @@
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <exception>
 #include <filesystem>
 #include <optional>
@@ -35,7 +34,7 @@ using namespace kepub::ciweimao;
 
 namespace {
 
-const auto token_path = std::getenv("HOME") + std::string("/.ciweimao");
+const auto token_path = klib::get_env("HOME").value_or("/tmp") + "/.ciweimao";
 
 bool show_user_info(const Token &token) {
   auto response = http_post("https://app.hbooker.com/reader/get_my_info",
