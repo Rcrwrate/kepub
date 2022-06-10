@@ -45,9 +45,9 @@ void open_browser(const std::string& url) {
 
   // WSL
   if (std::string(name.release).find("microsoft") != std::string::npos) {
-    klib::pipe("powershell.exe /c start " + url);
+    klib::exec("powershell.exe /c start " + url);
   } else {
-    klib::pipe("xdg-open " + url);
+    klib::exec("xdg-open " + url);
   }
 }
 
