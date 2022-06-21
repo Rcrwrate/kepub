@@ -109,8 +109,7 @@ std::optional<std::string> parse_image_url(const std::string &line) {
 }
 
 std::vector<std::string> get_content(std::uint64_t chapter_id) {
-  const auto id = std::to_string(chapter_id);
-  klib::URL url("https://api.sfacg.com/Chaps/" + id);
+  klib::URL url("https://api.sfacg.com/Chaps/" + std::to_string(chapter_id));
   url.set_query({{"expand", "content"}});
 
   auto response = http_get(url.to_string());
