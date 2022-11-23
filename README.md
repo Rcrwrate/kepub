@@ -1,5 +1,7 @@
 # kepub
 
+**This project is no longer maintained, the redesigned project is at https://github.com/novel-rs**
+
 [![Build](https://github.com/KaiserLancelot/kepub/actions/workflows/build.yml/badge.svg)](https://github.com/KaiserLancelot/kepub/actions/workflows/build.yml)
 [![Platform](https://img.shields.io/badge/Platform-Debian%2011-brightgreen)](https://www.debian.org/)
 [![Coverage Status](https://codecov.io/gh/KaiserLancelot/kepub/branch/main/graph/badge.svg?token=ZR870P8548)](https://codecov.io/gh/KaiserLancelot/kepub)
